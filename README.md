@@ -18,3 +18,5 @@ It's not finished yet. There are many works to do:
 
 TronEx have no UI at this stage. It should be deployed with my other project tronex-ui, which is a nodejs project. Of course you
 can change tronex-ui to any blockchain explorer UI. To integrate, simply try the REST API from TronEx controllers (in directory `src/main/kotlin/tronex/controllers`).
+
+Demo site is deployed at (http://47.98.58.42:8000). NOT production ready!!
