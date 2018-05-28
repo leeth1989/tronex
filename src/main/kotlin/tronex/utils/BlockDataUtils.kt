@@ -1,6 +1,7 @@
 package tronex.utils
 
 import org.apache.commons.lang3.time.DateFormatUtils
+import org.tron.protos.Contract
 import org.tron.protos.Protocol
 import tronex.*
 typealias ContractType = Protocol.Transaction.Contract.ContractType
@@ -60,3 +61,7 @@ fun convertData2TransferContract(input: ByteArray): TransferContract {
             amount = pbtc.amount.toString(),
             contractType = ContractType.TransferContract.name)
 }
+//
+//fun convertData2AccountCreateContract(input: ByteArray): Contract.AccountCreateContract {
+//
+//}

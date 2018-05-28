@@ -28,19 +28,20 @@ class SyncAccountTask {
     @Autowired
     private lateinit var tronClient: TronClientKT
 
-    @Scheduled(fixedDelay = 60000)
+//    @Scheduled(fixedDelay = 60000)
     fun syncAccounts() {
-        val stub = tronClient.getWalletStub()
-        val pbAccounts = stub.listAccounts(null).accountsList
-        val accountList = pbAccounts.map {
-            convertPBAccount2View(it)
-        }
-
-        accountList.forEach {
-
-            val doc = Document.parse(JSON.toJSONString(it))
-            db.accounts.replaceOne(eq("address", it.address), doc, UpdateOptions().upsert(true))
-
-        }
+//        val stub = tronClient.getWalletStub()
+//
+//        val pbAccounts = stub.listAccounts(null).accountsList
+//        val accountList = pbAccounts.map {
+//            convertPBAccount2View(it)
+//        }
+//
+//        accountList.forEach {
+//
+//            val doc = Document.parse(JSON.toJSONString(it))
+//            db.accounts.replaceOne(eq("address", it.address), doc, UpdateOptions().upsert(true))
+//
+//        }
     }
 }

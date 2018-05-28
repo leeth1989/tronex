@@ -93,15 +93,6 @@ class WalletController {
         return JSON.toJSONString(account)
     }
 
-    @RequestMapping("/accounts")
-    fun accountList(): String {
-        val stub = tronClient.getWalletStub()
-        val pbAccountList = stub.listAccounts(null).accountsList
-        val accountList = pbAccountList.map {
-            convertPBAccount2View(it)
-        }
-        return JSON.toJSONString(accountList)
-    }
 
 
 }

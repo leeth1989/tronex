@@ -6,6 +6,7 @@ import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Sorts
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
+import org.tron.api.GrpcAPI
 import tronex.APPLICATION_JSON
 import tronex.Account
 import tronex.services.DB
@@ -32,6 +33,7 @@ class AccountsController {
         return accountsList(1)
     }
 
+
     @RequestMapping("/page/{pageNum:[0-9]+}", produces = [APPLICATION_JSON])
     fun accountsList(@PathVariable pageNum: Int=1): String {
         val pageSize = 20
@@ -57,7 +59,22 @@ class AccountsController {
         val addrRaw = Base58.decode58Check(address)
         val pbAccount = tronClient.getWalletStub().getAccount(PBAccount.newBuilder().setAddress(ByteString.copyFrom(addrRaw)).build())
         val account = convertPBAccount2View(pbAccount, convertAssetMap = false)
+
+
+
+
         return JSON.toJSONString(account)
+    }
+
+    @RequestMapping("/query/{address}", produces = [APPLICATION_JSON])
+    fun query(@PathVariable address: String): String {
+        val addrBs = Base58.decode(address)
+        val pbAccount = PBAccount.newBuilder().setAddress(ByteString.copyFrom(addrBs)).build()
+        val ap = GrpcAPI.AccountPaginated.newBuilder().setAccount(pbAccount).build()
+        val stub = tronClient.getWalletExtensionStub()
+        val l = stub.getTransactionsFromThis(ap).transactionList
+        val l2 = stub.getTransactionsToThis(ap).transactionList
+        return JSON.toJSONString(l + l2)
     }
 
 }
