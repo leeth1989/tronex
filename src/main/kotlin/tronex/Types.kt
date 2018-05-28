@@ -18,9 +18,16 @@ data class Frozen(val frozenBalance: Long,
 data class Account(val accountName: String,
                    val accountType: String,
                    val address: String,
-                   val balance: Long,
+                   val balance: String,
                    val votes: List<Vote>,
-                   val asset: Map<String, Long>
+                   var asset: Map<String, Long>,
+                   val bandwidth: String,
+                   val createTime: String,
+                   val latestOperationTime: String,
+
+                   val allowance: Long,
+                   val latestWithdrawTime: String
+
                    )
 
 data class Header(val height: Long,
@@ -45,7 +52,8 @@ data class Result(val fee: Long,
 data class TransferContract(val from: String,
                             val to: String,
                             val amount: String,
-                            val contractType: String)
+                            val contractType: String
+                            )
 
 data class Transaction(val contractList: List<Any?>)
 
@@ -54,3 +62,13 @@ data class Block(val header: Header,
                  val txs: List<Transaction>,
                  val hash: String,
                  val id: String)
+
+data class Witness(val address: String,
+                   val voteCount: String,
+                   val pubKey: String,
+                   val url: String,
+                   val totalProduced: String,
+                   val totalMissed: String,
+                   val latestBlockNum: String,
+                   val latestSlotNum: String,
+                   val isJobs: Boolean)

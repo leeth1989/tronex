@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON
 import org.apache.commons.lang3.math.NumberUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
+import tronex.APPLICATION_JSON
 import tronex.BLOCK_ID_REGEX
 import tronex.services.DB
 import java.util.regex.Pattern
@@ -18,7 +19,7 @@ class BlockController {
     @Autowired
     lateinit var db: DB
 
-    @RequestMapping("/block/{height:[0-9]+}", produces = ["application/json"])
+    @RequestMapping("/block/{height:[0-9]+}", produces = [APPLICATION_JSON])
     fun blockByHeight(@PathVariable height: Long, response: HttpServletResponse): String? {
         val block = db.findByHeight(height)
         if (block == null) {
@@ -28,7 +29,7 @@ class BlockController {
         return JSON.toJSONString(block)
     }
 
-    @RequestMapping("/block/id/{id:$BLOCK_ID_REGEX}", produces = ["application/json"])
+    @RequestMapping("/block/id/{id:$BLOCK_ID_REGEX}", produces = [APPLICATION_JSON])
     fun blockById(@PathVariable id: String, response: HttpServletResponse): String? {
         val block = db.findById(id)
         if (block == null) {
@@ -38,7 +39,7 @@ class BlockController {
         return JSON.toJSONString(block)
     }
 
-    @RequestMapping("/block/search", produces = ["application/json"])
+    @RequestMapping("/block/search", produces = [APPLICATION_JSON])
     fun search(@RequestParam("q") q: String, response: HttpServletResponse): String? {
         return when {
             NumberUtils.isDigits(q) -> {
@@ -58,15 +59,16 @@ class BlockController {
         }
     }
 
-    @RequestMapping("/block/latest", produces = ["application/json"])
+    @RequestMapping("/block/latest", produces = [APPLICATION_JSON])
     fun latest(): String {
         val blocks = db.latestN(20)
         return JSON.toJSONString(blocks)
     }
 
-    @RequestMapping("/blocks/page/{pageNum:[0-9]+}", produces = ["application/json"])
+    @RequestMapping("/blocks/page/{pageNum:[0-9]+}", produces = [APPLICATION_JSON])
     fun pagedBlocks(@PathVariable pageNum: Int): String {
         val blocks = db.findPagedBlocks(pageNum, 20)
         return JSON.toJSONString(blocks)
     }
+
 }

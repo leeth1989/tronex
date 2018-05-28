@@ -5,56 +5,64 @@ import com.mongodb.MongoClient
 import com.mongodb.client.MongoCollection
 import org.bson.Document
 import org.springframework.stereotype.Service
-import tronex.Block
 import com.mongodb.client.model.Filters.*
+import com.mongodb.client.model.Indexes
 import com.mongodb.client.model.Sorts
-import org.springframework.beans.factory.annotation.Autowired
-import tronex.AppConfig
+import org.springframework.beans.factory.annotation.Value
+import tronex.*
+import javax.print.Doc
+import com.mongodb.client.model.IndexOptions
+
+
 
 @Service
-class DB {
-    private var mongoClient: MongoClient? = null
-    private var blockCollection: MongoCollection<Document>? = null
+class DB(@Value(MONGODB_HOST) host: String?,
+         @Value(MONGODB_PORT) port: Int?) {
 
-    @Autowired
-    private lateinit var appConfig: AppConfig
+    private var mongoClient: MongoClient = MongoClient(host, port!!)
 
-    @Synchronized
-    fun getMongoClient(): MongoClient {
-        if (mongoClient == null) {
-            val host = appConfig.mongodbHost
-            val port = appConfig.mongodbPort.toInt()
-            mongoClient = MongoClient(host, port)
-        }
-        return mongoClient!!
+
+    lateinit var blocks: MongoCollection<Document>
+    lateinit var transactions: MongoCollection<Document>
+    lateinit var accounts: MongoCollection<Document>
+
+    init {
+
+        val tronexDb = mongoClient.getDatabase("tronex")
+
+        blocks = tronexDb.getCollection("blocks")
+        blocks.createIndex(Indexes.descending("height"))
+        blocks.createIndex(Indexes.ascending("id"))
+
+        transactions = tronexDb.getCollection("transactions")
+        transactions.createIndex(Document("from", 1))
+        transactions.createIndex(Document("to", 1))
+
+        accounts = tronexDb.getCollection("accounts")
+        accounts.createIndex(Indexes.ascending("address"), IndexOptions().unique(true))
+        accounts.createIndex(Indexes.descending("balance"))
     }
 
-    @Synchronized
-    fun initBlocksCollection() {
-        if (blockCollection == null) {
-            blockCollection = getMongoClient().getDatabase("tronex")!!.getCollection("blocks")
-            blockCollection!!.createIndex(Document("height", -1))
-            blockCollection!!.createIndex(Document("id", -1))
-        }
+    fun insertOrUpdate(account: Account) {
+        accounts.find()
     }
 
-    fun blocks(): MongoCollection<Document> {
-        if (blockCollection == null) {
-            initBlocksCollection()
-        }
-        return blockCollection!!
-    }
+    fun saveTransaction(tx: Transaction) {
+        val json = JSON.toJSONString(tx)
+        val doc = Document.parse(json)
 
+        transactions.insertOne(doc)
+    }
 
     fun saveBlock(block: Block) {
         val json = JSON.toJSONString(block)
         val doc = Document.parse(json)
         doc.append("height", block.header.height)
-        blocks().insertOne(doc)
+        blocks.insertOne(doc)
     }
 
     fun findByHeight(height: Long): Block? {
-        val doc = blocks().find(eq("height", height)).first()
+        val doc = blocks.find(eq("height", height)).first()
         if (doc != null) {
             val json = doc.toJson()
             val block = JSON.parseObject(json, Block::class.java)
@@ -65,7 +73,7 @@ class DB {
     }
 
     fun findById(id: String): Block? {
-        val doc = blocks().find(eq("id", id)).first()
+        val doc = blocks.find(eq("id", id)).first()
         if (doc != null) {
             val json = doc.toJson()
             val block = JSON.parseObject(json, Block::class.java)
@@ -76,12 +84,12 @@ class DB {
     }
 
     fun largestHeight(): Long {
-        val doc = blocks().find().sort(Sorts.descending("height")).first() ?: return -1
+        val doc = blocks.find().sort(Sorts.descending("height")).first() ?: return -1
         return doc.getLong("height")
     }
 
     fun latestN(n: Int = 10): List<Block> {
-        val docs = blocks().find().sort(Sorts.descending("height")).limit(n)
+        val docs = blocks.find().sort(Sorts.descending("height")).limit(n)
         val blocks = docs.map {
             val json = it.toJson()
             val block = JSON.parseObject(json, Block::class.java)
@@ -96,7 +104,7 @@ class DB {
         val maxHeight = largestHeight - (pageN - 1) * pageSize
         val minHeight = maxHeight - pageSize
 
-        val docs = blocks().find(
+        val docs = blocks.find(
                 and(lte("height", maxHeight),
                         gt("height", minHeight))
         ).sort(Sorts.descending("height"))
@@ -107,6 +115,7 @@ class DB {
             block
         }.toList()
         return blocks
-
     }
+
+
 }

@@ -18,12 +18,12 @@ import java.util.regex.Pattern
 import javax.servlet.http.HttpServletResponse
 
 @RestController
-@RequestMapping("/v0", method = [RequestMethod.GET])
+@RequestMapping("/v0", method = [RequestMethod.GET], produces = ["application/json"])
 class WalletController {
     @Autowired
     lateinit var tronClient: TronClientKT
 
-    @RequestMapping("/block/{height:[0-9]+}", produces = ["application/json"])
+    @RequestMapping("/block/{height:[0-9]+}")
     fun blockByHeight(@PathVariable height: Long, response: HttpServletResponse): String? {
 
         val stub = tronClient.getWalletStub()
@@ -37,7 +37,7 @@ class WalletController {
         return JSON.toJSONString(block)
     }
 
-    @RequestMapping("/block/id/{id:${BLOCK_ID_REGEX}}", produces = ["application/json"])
+    @RequestMapping("/block/id/{id:$BLOCK_ID_REGEX}")
     fun blockById(@PathVariable id: String, response: HttpServletResponse): String? {
         val stub = tronClient.getWalletStub()
         val idBytes = fromHex(id)
@@ -52,7 +52,7 @@ class WalletController {
         return JSON.toJSONString(block)
     }
 
-    @RequestMapping("/block/now", produces = ["application/json"])
+    @RequestMapping("/block/now")
     fun nowBlock(): String {
         val stub = tronClient.getWalletStub()
         val pbblock = stub.getNowBlock(null)
@@ -60,7 +60,7 @@ class WalletController {
         return JSON.toJSONString(block)
     }
 
-    @RequestMapping("/block/search", produces = ["application/json"])
+    @RequestMapping("/block/search")
     fun search(@RequestParam("q") q: String, response: HttpServletResponse): RedirectView? {
         return when {
             NumberUtils.isDigits(q) -> {
@@ -75,7 +75,7 @@ class WalletController {
         }
     }
 
-    @RequestMapping("/account/{address}", produces = ["application/json"])
+    @RequestMapping("/account/{address}")
     fun accountDetail(@PathVariable address: String, response: HttpServletResponse): String? {
         val stub = tronClient.getWalletStub()
 
@@ -92,5 +92,16 @@ class WalletController {
 
         return JSON.toJSONString(account)
     }
+
+    @RequestMapping("/accounts")
+    fun accountList(): String {
+        val stub = tronClient.getWalletStub()
+        val pbAccountList = stub.listAccounts(null).accountsList
+        val accountList = pbAccountList.map {
+            convertPBAccount2View(it)
+        }
+        return JSON.toJSONString(accountList)
+    }
+
 
 }

@@ -20,7 +20,22 @@ class SyncHistoryBlockTask: Runnable {
     @Autowired
     private lateinit var tronClientKT: TronClientKT
 
+
+    private var isRunning: Boolean = false
+    @Synchronized
+    fun isRunning(): Boolean {
+        return isRunning
+    }
+
+    fun setRunning(r: Boolean) {
+        this.isRunning = r
+    }
+
+
     override fun run() {
+
+        setRunning(true)
+
         val stub = tronClientKT.getWalletStub()
         val block = stub.getNowBlock(null)
 
@@ -45,6 +60,8 @@ class SyncHistoryBlockTask: Runnable {
             }
 
         }
+
+        setRunning(false)
     }
 
 

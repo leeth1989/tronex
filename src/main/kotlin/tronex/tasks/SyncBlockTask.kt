@@ -20,8 +20,16 @@ class SyncBlockTask {
     @Autowired
     private lateinit var tronClient: TronClientKT
 
+    @Autowired
+    private lateinit var syncHistoryBlockTask: SyncHistoryBlockTask
+
     @Scheduled(fixedDelay = 1000)
     fun syncBlock() {
+
+        if (syncHistoryBlockTask.isRunning()) {
+            return
+        }
+
         val stub = tronClient.getWalletStub()
         val nowBlock = stub.getNowBlock(null)
         val nowHeight = nowBlock.blockHeader.rawData.number
