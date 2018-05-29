@@ -35,7 +35,12 @@ class StatsController {
         return JSON.toJSONString(mapOf("height" to height))
     }
 
-
+    @RequestMapping("/totaltxcount", produces = [APPLICATION_JSON])
+    fun indexStats(): String {
+        val stub = tronClient.getWalletStub()
+        val totalCount = stub.totalTransaction(null).num
+        return JSON.toJSONString(mapOf("totalTxCount" to totalCount))
+    }
 
     @RequestMapping("/txcount", produces = [APPLICATION_JSON])
     fun transactionCount(): String {

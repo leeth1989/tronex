@@ -22,6 +22,7 @@ class NodesController {
     fun nodesList(): String {
         val stub = tronClientKT.getWalletStub()
         val pbNodesList = stub.listNodes(null).nodesList
+
         return JSON.toJSONString(pbNodesList.size)
     }
 
